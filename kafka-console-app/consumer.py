@@ -12,7 +12,6 @@ class EventStreamsSample(object):
 
     def __init__(self):
         self.opts = {}
-        self.run_consumer = True
         self.consumer = None
 
         load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
@@ -25,19 +24,11 @@ class EventStreamsSample(object):
         if any(k not in self.opts for k in ('brokers', 'rest_endpoint', 'api_key')):
             print('Error - Failed to retrieve options. Check that app is bound to an Event Streams service or that command line options are correct.')
             sys.exit(-1)
-
-        # Use Event Streams' REST admin API to create the topic
-        # with 1 partition and a retention period of 24 hours.
+            
         rest_client = rest.EventStreamsRest(self.opts['rest_endpoint'], self.opts['api_key'])
         rest_client.create_topic(self.opts['topic_name'], 1, 24)
 
-    def shutdown(self):
-        print('Shutdown received.')
-        if self.run_consumer:
-            self.consumer.stop()
-
-    async def run_tasks(self):
-        driver_options = {
+        self.driver_options = {
             'bootstrap.servers': self.opts['brokers'],
             'security.protocol': 'SASL_SSL',
             'sasl.mechanisms': 'PLAIN',
@@ -47,20 +38,26 @@ class EventStreamsSample(object):
             'broker.version.fallback': '0.10.2.1',
             'log.connection.close' : False
         }
-        consumer_opts = {
+
+        self.consumer_opts = {
             'client.id': 'kafka-python-console-sample-consumer',
             'group.id': 'kafka-python-console-sample-group'
         }
 
-        # Add the common options to consumer and producer
-        for key in driver_options:
-            consumer_opts[key] = driver_options[key]
+        for key in self.driver_options:
+            self.consumer_opts[key] = self.driver_options[key]
 
+        self.consumer = consumertask.ConsumerTask(self.consumer_opts, self.opts['topic_name'])
+
+
+    def shutdown(self):
+        print('Shutdown received.')
+        self.consumer.stop()
+
+    async def run_tasks(self):
         tasks = []
 
-        if self.run_consumer:
-            self.consumer = consumertask.ConsumerTask(consumer_opts, self.opts['topic_name'])
-            tasks.append(asyncio.ensure_future(self.consumer.run()))
+        tasks.append(asyncio.ensure_future(self.consumer.run()))
 
         done, pending = await asyncio.wait(tasks)
         for future in done | pending:

@@ -21,7 +21,6 @@ class ProducerTask(object):
             print('Message produced : ' + str(msg.value()))
 
     def run(self, geo_coordinates):
-        print('The producer has started')
         key = 'key'
         try:
             self.producer.produce(self.topic_name, json.dumps(geo_coordinates), key, -1, self.on_delivery)
