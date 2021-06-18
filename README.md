@@ -33,7 +33,7 @@ Under the directory execute  the command :
 ```bash
 git clone https://github.com/chhabrabhishek/collar_kafka.git 
 ```
-Navigate to folder cd collor_kafka/kafka_console_app and then execute: 
+Navigate to folder cd collor_kafka and then execute: 
 ```bash
 cp env.sample .env
 ```
