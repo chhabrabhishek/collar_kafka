@@ -20,7 +20,7 @@ class ConsumerTask(object):
             if msg is not None and msg.error() is None:
                 print("Message consumed: " + str(msg.value()))
                 data = json.loads(msg.value())
-                data_json = json.dumps({"Location": data})
+                data_json = json.dumps(data)
                 with open('coordinates.json', 'w') as outfile:
                     outfile.write(data_json)
                 
