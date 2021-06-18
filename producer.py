@@ -51,7 +51,7 @@ def before_first_request_func():
 
 
 @app.route("/produce")
-def hello_world():
+def produce_event():
     geo_coordinates = {
         'Latitude': request.args['lat'],
         'Longitude': request.args['long'],
